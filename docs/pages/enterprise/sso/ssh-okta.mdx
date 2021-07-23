@@ -48,11 +48,7 @@ auth_service:
 
 First, create a SAML 2.0 Web App in Okta configuration section
 
-### 1. Switch to Classic UI
-
-![Switch to classic UI](../../../img/sso/okta/switch-to-classic.gif)
-
-### 2. Select Create New App
+### 1. Select Create New App
 
 Select Web Platform and SAML 2.0 Sign On Method.
 ![Create APP](../../../img/sso/okta/okta-saml-1.png)
@@ -64,8 +60,8 @@ statements (special signed metadata exposed via a SAML XML response).
 
 GENERAL
 
-- Single sign on URL `https://teleport-proxy.example.com:3080/v1/webapi/saml/acs`
-- Audience URI (SP Entity ID)`https://teleport-proxy.example.com:3080/v1/webapi/saml/acs`
+- Single sign on URL `https://teleport-proxy.example.com:443/v1/webapi/saml/acs`
+- Audience URI (SP Entity ID)`https://teleport-proxy.example.com:443/v1/webapi/saml/acs`
 - Name ID format `EmailAddress`
 - Application username `Okta username`
 
@@ -130,27 +126,8 @@ $ tctl create okta-connector.yaml
 
 ## Create Teleport Roles
 
-We are going to create 2 roles, privileged role admin who is able to login as
-root and is capable of administrating the cluster and non-privileged dev.
+We are going to create 1 role to show using SSO information. 
 
-```yaml
-kind: role
-version: v3
-metadata:
-  name: admin
-spec:
-  options:
-    max_session_ttl: 24h
-  allow:
-    logins: [root]
-    node_labels:
-      "*": "*"
-    rules:
-      - resources: ["*"]
-        verbs: ["*"]
-```
-
-The developer role:
 
 ```yaml
 kind: role
@@ -176,7 +153,6 @@ spec:
 Now, create both roles on the auth server:
 
 ```bsh
-$ tctl create admin.yaml
 $ tctl create dev.yaml
 ```
 
@@ -186,7 +162,7 @@ The Web UI will now contain a new button: "Login with Okta". The CLI is
 the same as before:
 
 ```bsh
-$ tsh --proxy=proxy.example.com login
+$ tsh login --proxy=proxy.example.com --auth=okta
 ```
 
 This command will print the SSO login URL (and will try to open it
