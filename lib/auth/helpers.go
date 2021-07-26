@@ -218,13 +218,6 @@ func NewTestAuthServer(cfg TestAuthServerConfig) (*TestAuthServer, error) {
 	access := local.NewAccessService(srv.Backend)
 	identity := local.NewIdentityService(srv.Backend)
 
-	clusterName, err := services.NewClusterNameWithRandomID(types.ClusterNameSpecV2{
-		ClusterName: cfg.ClusterName,
-	})
-	if err != nil {
-		return nil, trace.Wrap(err)
-	}
-
 	srv.AuthServer, err = NewServer(&InitConfig{
 		Backend:                srv.Backend,
 		Authority:              authority.NewWithClock(cfg.Clock),
@@ -258,21 +251,17 @@ func NewTestAuthServer(cfg TestAuthServerConfig) (*TestAuthServer, error) {
 		return nil, trace.Wrap(err)
 	}
 
-	err = srv.AuthServer.SetAuthPreference(ctx, types.DefaultAuthPreference())
+	clusterName, err := services.NewClusterNameWithRandomID(types.ClusterNameSpecV2{
+		ClusterName: cfg.ClusterName,
+	})
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}
-
-	err = srv.AuthServer.SetClusterConfig(types.DefaultClusterConfig())
-	if err != nil {
-		return nil, trace.Wrap(err)
-	}
-
-	// set cluster name in the backend
 	err = srv.AuthServer.SetClusterName(clusterName)
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}
+
 	authPreference, err := types.NewAuthPreferenceFromConfigFile(types.AuthPreferenceSpecV2{
 		Type:         constants.Local,
 		SecondFactor: constants.SecondFactorOff,
@@ -281,6 +270,11 @@ func NewTestAuthServer(cfg TestAuthServerConfig) (*TestAuthServer, error) {
 		return nil, trace.Wrap(err)
 	}
 	err = srv.AuthServer.SetAuthPreference(ctx, authPreference)
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	err = srv.AuthServer.SetClusterConfig(types.DefaultClusterConfig())
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}
@@ -326,7 +320,7 @@ func NewTestAuthServer(cfg TestAuthServerConfig) (*TestAuthServer, error) {
 		return nil, trace.Wrap(err)
 	}
 
-	srv.Authorizer, err = NewAuthorizer(srv.ClusterName, srv.AuthServer.Access, srv.AuthServer.Identity, srv.AuthServer.Trust)
+	srv.Authorizer, err = NewAuthorizer(srv.ClusterName, srv.AuthServer)
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}
@@ -787,14 +781,14 @@ func (t *TestTLSServer) Close() error {
 
 // Shutdown closes the listener and HTTP server gracefully
 func (t *TestTLSServer) Shutdown(ctx context.Context) error {
-	err := t.TLSServer.Shutdown(ctx)
+	errs := []error{t.TLSServer.Shutdown(ctx)}
 	if t.Listener != nil {
-		t.Listener.Close()
+		errs = append(errs, t.Listener.Close())
 	}
 	if t.AuthServer.Backend != nil {
-		t.AuthServer.Backend.Close()
+		errs = append(errs, t.AuthServer.Backend.Close())
 	}
-	return err
+	return trace.NewAggregate(errs...)
 }
 
 // Stop stops listening server, but does not close the auth backend
