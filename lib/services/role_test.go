@@ -2189,22 +2189,18 @@ func TestBoolOptions(t *testing.T) {
 }
 
 func TestCheckAccessToDatabase(t *testing.T) {
-	dbStage, err := types.NewDatabaseServerV3("stage",
+	dbStage, err := types.NewDatabaseV3("stage",
 		map[string]string{"env": "stage"},
-		types.DatabaseServerSpecV3{
+		types.DatabaseSpecV3{
 			Protocol: "protocol",
 			URI:      "uri",
-			Hostname: "hostname",
-			HostID:   "host_id",
 		})
 	require.NoError(t, err)
-	dbProd, err := types.NewDatabaseServerV3("prod",
+	dbProd, err := types.NewDatabaseV3("prod",
 		map[string]string{"env": "prod"},
-		types.DatabaseServerSpecV3{
+		types.DatabaseSpecV3{
 			Protocol: "protocol",
 			URI:      "uri",
-			Hostname: "hostname",
-			HostID:   "host_id",
 		})
 	require.NoError(t, err)
 	roleDevStage := &types.RoleV4{
@@ -2273,7 +2269,7 @@ func TestCheckAccessToDatabase(t *testing.T) {
 	}
 	require.NoError(t, roleDeny.CheckAndSetDefaults())
 	type access struct {
-		server types.DatabaseServer
+		server types.Database
 		dbName string
 		dbUser string
 		access bool
@@ -2365,22 +2361,18 @@ func TestCheckAccessToDatabase(t *testing.T) {
 }
 
 func TestCheckAccessToDatabaseUser(t *testing.T) {
-	dbStage, err := types.NewDatabaseServerV3("stage",
+	dbStage, err := types.NewDatabaseV3("stage",
 		map[string]string{"env": "stage"},
-		types.DatabaseServerSpecV3{
+		types.DatabaseSpecV3{
 			Protocol: "protocol",
 			URI:      "uri",
-			Hostname: "hostname",
-			HostID:   "host_id",
 		})
 	require.NoError(t, err)
-	dbProd, err := types.NewDatabaseServerV3("prod",
+	dbProd, err := types.NewDatabaseV3("prod",
 		map[string]string{"env": "prod"},
-		types.DatabaseServerSpecV3{
+		types.DatabaseSpecV3{
 			Protocol: "protocol",
 			URI:      "uri",
-			Hostname: "hostname",
-			HostID:   "host_id",
 		})
 	require.NoError(t, err)
 	roleDevStage := &types.RoleV4{
@@ -2408,7 +2400,7 @@ func TestCheckAccessToDatabaseUser(t *testing.T) {
 		},
 	}
 	type access struct {
-		server types.DatabaseServer
+		server types.Database
 		dbUser string
 		access bool
 	}
@@ -2545,42 +2537,34 @@ func TestCheckDatabaseNamesAndUsers(t *testing.T) {
 }
 
 func TestCheckAccessToDatabaseService(t *testing.T) {
-	dbNoLabels, err := types.NewDatabaseServerV3("test",
+	dbNoLabels, err := types.NewDatabaseV3("test",
 		nil,
-		types.DatabaseServerSpecV3{
+		types.DatabaseSpecV3{
 			Protocol: "protocol",
 			URI:      "uri",
-			Hostname: "hostname",
-			HostID:   "host_id",
 		})
 	require.NoError(t, err)
-	dbStage, err := types.NewDatabaseServerV3("stage",
+	dbStage, err := types.NewDatabaseV3("stage",
 		map[string]string{"env": "stage"},
-		types.DatabaseServerSpecV3{
+		types.DatabaseSpecV3{
 			Protocol:      "protocol",
 			URI:           "uri",
-			Hostname:      "hostname",
-			HostID:        "host_id",
 			DynamicLabels: map[string]types.CommandLabelV2{"arch": {Result: "x86"}},
 		})
 	require.NoError(t, err)
-	dbStage2, err := types.NewDatabaseServerV3("stage2",
+	dbStage2, err := types.NewDatabaseV3("stage2",
 		map[string]string{"env": "stage"},
-		types.DatabaseServerSpecV3{
+		types.DatabaseSpecV3{
 			Protocol:      "protocol",
 			URI:           "uri",
-			Hostname:      "hostname",
-			HostID:        "host_id",
 			DynamicLabels: map[string]types.CommandLabelV2{"arch": {Result: "amd64"}},
 		})
 	require.NoError(t, err)
-	dbProd, err := types.NewDatabaseServerV3("prod",
+	dbProd, err := types.NewDatabaseV3("prod",
 		map[string]string{"env": "prod"},
-		types.DatabaseServerSpecV3{
+		types.DatabaseSpecV3{
 			Protocol: "protocol",
 			URI:      "uri",
-			Hostname: "hostname",
-			HostID:   "host_id",
 		})
 	require.NoError(t, err)
 	roleAdmin := &types.RoleV4{
@@ -2614,7 +2598,7 @@ func TestCheckAccessToDatabaseService(t *testing.T) {
 		},
 	}
 	type access struct {
-		server types.DatabaseServer
+		server types.Database
 		access bool
 	}
 	testCases := []struct {

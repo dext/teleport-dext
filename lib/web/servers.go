@@ -20,6 +20,7 @@ import (
 	"net/http"
 
 	apidefaults "github.com/gravitational/teleport/api/defaults"
+	"github.com/gravitational/teleport/api/types"
 	"github.com/gravitational/teleport/lib/reversetunnel"
 	"github.com/gravitational/teleport/lib/web/ui"
 	"github.com/gravitational/trace"
@@ -50,10 +51,16 @@ func (h *Handler) clusterDatabasesGet(w http.ResponseWriter, r *http.Request, p 
 	}
 
 	// Get a list of database servers.
-	dbServers, err := clt.GetDatabaseServers(r.Context(), apidefaults.Namespace)
+	servers, err := clt.GetDatabaseServers(r.Context(), apidefaults.Namespace)
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}
 
-	return ui.MakeDatabases(h.auth.clusterName, dbServers), nil
+	// Make a list of all proxied databases.
+	var databases []types.Database
+	for _, server := range servers {
+		databases = append(databases, server.GetDatabases()...)
+	}
+
+	return ui.MakeDatabases(h.auth.clusterName, types.DeduplicateDatabases(databases)), nil
 }

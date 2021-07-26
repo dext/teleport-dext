@@ -22,14 +22,12 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// TestDatabaseServerRDSEndpoint verifies AWS info is correctly populated
+// TestDatabaseRDSEndpoint verifies AWS info is correctly populated
 // based on the RDS endpoint.
-func TestDatabaseServerRDSEndpoint(t *testing.T) {
-	server, err := NewDatabaseServerV3("rds", nil, DatabaseServerSpecV3{
+func TestDatabaseRDSEndpoint(t *testing.T) {
+	server, err := NewDatabaseV3("rds", nil, DatabaseSpecV3{
 		Protocol: "postgres",
 		URI:      "aurora-instance-1.abcdefghijklmnop.us-west-1.rds.amazonaws.com:5432",
-		Hostname: "host-1",
-		HostID:   "host-1",
 	})
 	require.NoError(t, err)
 	require.Equal(t, AWS{
@@ -37,14 +35,12 @@ func TestDatabaseServerRDSEndpoint(t *testing.T) {
 	}, server.GetAWS())
 }
 
-// TestDatabaseServerRedshiftEndpoint verifies AWS info is correctly populated
+// TestDatabaseRedshiftEndpoint verifies AWS info is correctly populated
 // based on the Redshift endpoint.
-func TestDatabaseServerRedshiftEndpoint(t *testing.T) {
-	server, err := NewDatabaseServerV3("redshift", nil, DatabaseServerSpecV3{
+func TestDatabaseRedshiftEndpoint(t *testing.T) {
+	server, err := NewDatabaseV3("redshift", nil, DatabaseSpecV3{
 		Protocol: "postgres",
 		URI:      "redshift-cluster-1.abcdefghijklmnop.us-east-1.redshift.amazonaws.com:5438",
-		Hostname: "host-1",
-		HostID:   "host-1",
 	})
 	require.NoError(t, err)
 	require.Equal(t, AWS{
