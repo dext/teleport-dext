@@ -3196,6 +3196,60 @@ func (a *ServerWithRoles) StreamSessionEvents(ctx context.Context, sessionID ses
 	return a.alog.StreamSessionEvents(ctx, sessionID, startIndex)
 }
 
+// CreateDatabase creates a new database resource.
+func (a *ServerWithRoles) CreateDatabase(ctx context.Context, database types.Database) error {
+	if err := a.action(apidefaults.Namespace, types.KindDatabase, types.VerbCreate); err != nil {
+		return trace.Wrap(err)
+	}
+	return a.authServer.CreateDatabase(ctx, database)
+}
+
+// UpdateDatabase updates existing database resource.
+func (a *ServerWithRoles) UpdateDatabase(ctx context.Context, database types.Database) error {
+	if err := a.action(apidefaults.Namespace, types.KindDatabase, types.VerbUpdate); err != nil {
+		return trace.Wrap(err)
+	}
+	return a.authServer.UpdateDatabase(ctx, database)
+}
+
+// GetDatabase returns specified database resource.
+func (a *ServerWithRoles) GetDatabase(ctx context.Context, name string) (types.Database, error) {
+	if err := a.action(apidefaults.Namespace, types.KindDatabase, types.VerbRead); err != nil {
+		return nil, trace.Wrap(err)
+	}
+	return a.authServer.GetDatabase(ctx, name)
+}
+
+// GetDatabases returns all database resources.
+func (a *ServerWithRoles) GetDatabases(ctx context.Context) ([]types.Database, error) {
+	if err := a.action(apidefaults.Namespace, types.KindDatabase, types.VerbList); err != nil {
+		return nil, trace.Wrap(err)
+	}
+	if err := a.action(apidefaults.Namespace, types.KindDatabase, types.VerbRead); err != nil {
+		return nil, trace.Wrap(err)
+	}
+	return a.authServer.GetDatabases(ctx)
+}
+
+// DeleteDatabase removes the specified database resource.
+func (a *ServerWithRoles) DeleteDatabase(ctx context.Context, name string) error {
+	if err := a.action(apidefaults.Namespace, types.KindDatabase, types.VerbDelete); err != nil {
+		return trace.Wrap(err)
+	}
+	return a.authServer.DeleteDatabase(ctx, name)
+}
+
+// DeleteAllDatabases removes all database resources.
+func (a *ServerWithRoles) DeleteAllDatabases(ctx context.Context) error {
+	if err := a.action(apidefaults.Namespace, types.KindDatabase, types.VerbList); err != nil {
+		return trace.Wrap(err)
+	}
+	if err := a.action(apidefaults.Namespace, types.KindDatabase, types.VerbDelete); err != nil {
+		return trace.Wrap(err)
+	}
+	return a.authServer.DeleteAllDatabases(ctx)
+}
+
 // NewAdminAuthServer returns auth server authorized as admin,
 // used for auth server cached access
 func NewAdminAuthServer(authServer *Server, sessions session.Service, alog events.IAuditLog) (ClientI, error) {

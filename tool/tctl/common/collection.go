@@ -567,6 +567,7 @@ func (c *netRestrictionsCollection) writeText(w io.Writer) error {
 	return trace.Wrap(out.err)
 }
 
+// TODO(r0mant): Rename to dbServersCollection
 type dbCollection struct {
 	servers []types.DatabaseServer
 }
@@ -605,6 +606,45 @@ func (c *dbCollection) toMarshal() interface{} {
 }
 
 func (c *dbCollection) writeYAML(w io.Writer) error {
+	return utils.WriteYAML(w, c.toMarshal())
+}
+
+type databaseCollection struct {
+	databases []types.Database
+}
+
+func (c *databaseCollection) resources() (r []types.Resource) {
+	for _, resource := range c.databases {
+		r = append(r, resource)
+	}
+	return r
+}
+
+func (c *databaseCollection) writeText(w io.Writer) error {
+	t := asciitable.MakeTable([]string{"Name", "Protocol", "URI", "Labels"})
+	for _, database := range c.databases {
+		t.AddRow([]string{
+			database.GetName(), database.GetProtocol(), database.GetURI(), database.LabelsString(),
+		})
+	}
+	_, err := t.AsBuffer().WriteTo(w)
+	return trace.Wrap(err)
+}
+
+func (c *databaseCollection) writeJSON(w io.Writer) error {
+	data, err := json.MarshalIndent(c.toMarshal(), "", "    ")
+	if err != nil {
+		return trace.Wrap(err)
+	}
+	_, err = w.Write(data)
+	return trace.Wrap(err)
+}
+
+func (c *databaseCollection) toMarshal() interface{} {
+	return c.databases
+}
+
+func (c *databaseCollection) writeYAML(w io.Writer) error {
 	return utils.WriteYAML(w, c.toMarshal())
 }
 
